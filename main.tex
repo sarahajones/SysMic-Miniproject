@@ -67,7 +67,7 @@
                   \endgraf\medskip
                          \endgraf\medskip
    Attention and Cognitive Control Lab*\endgraf\medskip
-    Word Count: ****}}
+    Word Count: 4173}}
     
 \begin{titlepage}
 \maketitle
@@ -78,7 +78,7 @@
 \clearpage
 %TC:endignore
 \begin{abstract}
- This project seeks to fit a Lotka-Volterra predator-prey model to data of hare and lynxs populations derived from historical data based on the number of pelts hunted by annually. The model simulations seek to describe the interactive oscillations of the prey and predator populations in terms of simple equations. The simulations show a clear qualitative mirroring of the historical data to the simulated values based on the Lotka-Volterra model. This suggests that the values from the pelt industry approximate the predator-prey dynamics, however  inferring to the true population and the wider ecosystem is not possible with these data. Future studies should ascertain the plausibility of these models on a more representative data set and consider the value of a parameter to infer from secondary data sets to true population sizes.  
+ This project seeks to fit a Lotka-Volterra predator-prey model to data of hare and lynx populations derived from historical data based on the number of pelts hunted by annually. The model simulations seek to describe the interactive oscillations of the prey and predator populations in terms of simple equations. The simulations show a clear qualitative mirroring of the historical data to the simulated values based on the Lotka-Volterra model. This suggests that the values from the pelt industry approximate the predator-prey dynamics, however  inferring to the true population and the wider ecosystem is not possible with these data. Future studies should ascertain the plausibility of these models on a more representative data set and consider the value of a parameter to infer from secondary data sets to true population sizes.  
 \end{abstract}
 
 \section{Description of the Biological System Explored}
@@ -178,9 +178,11 @@ While these simplifications may abstract away from the complexity of the larger 
 
 \clearpage
 \section{Code Listings}
-The report was conducted using the following MATLAB file: lynx\_hare.mat 
+The report was conducted using the following MATLAB file: lynx\_hare.m= 
 
 This script runs with a local function to encode the model. It calls the ode45 solver and plots the output appropriately. 
+
+teh extension to the model is run use the functions in the: lynx\_hare\_extension.m file
 
 These files along with the dataset used can be found stored openly on \href{https://github.com/sarahajones/sysmic_miniproject}{GitHub} alongside the \href{https://github.com/sarahajones/SysMic-Miniproject}{$LaTeX$} project used to generate the report itself. 
 
@@ -367,9 +369,67 @@ Both male and female snowshoe hares are known to reach sexual maturity only at a
     \label{fig:results_3}
 \end{figure}
 
-\subsubsection{Model Extensions}
+\subsubsection{Model Extension}
+The model was extended by following the \href{https://jmahaffy.sdsu.edu/courses/f09/math636/lectures/lotka/qualde2.html}{tutorial} given by Joseph J. Mahaffy. This tutorial attempts to more closely model the parameters based on the pelt data to better estimate the rate constants and then uses MatLab to find the least squares best fit of the model parameters. This extension was conducted to lend credence to the final estimate for $k_1$ (of 0.5) used above which, while well fitting, was not well justified. 
 
- 
+To begin with the mathematical model was re-derived as follows: 
+
+\begin{eqnarray*}
+     \frac{dX(t)}{dt} = a_1X(t) - a_2X(t)Y(t) = 0
+\end{eqnarray*}
+where $X(t)$ is the population of hare at time $t$, $Y(t)$ is the predator population at time $t$, $a_1$ and $a_2$ are rate constants for the prey population;
+\begin{eqnarray*}
+     \frac{dY(t)}{dt} = - b_1Y(t) + b_2X(t)Y(t) = 0
+\end{eqnarray*}
+
+Using these equations we find equilibria at when the values equate to zero and to find values for these equilibrium states we average the data between two maxima or minima resulting in the following;
+
+\begin{eqnarray*}
+     Y_e = a_1/a_2 = 34,600
+\end{eqnarray*}
+\begin{eqnarray*}
+     X_e = b_1/b_2 = 22,100
+\end{eqnarray*}
+where $b_1$ and $b_2$ are rate constants for the predator population. 
+
+To estimate the value of the rate constants begin by looking at the exponential population growth of the prey in the absence of predation:
+ \begin{equation*}
+    X(t) = X_0e^{a_1t}
+\end{equation*}
+pulling from the data in a period of rapid prey population growth (1910-1911)
+ \begin{equation*}
+    40.3 = 27.1e^{a_1t}
+\end{equation*}
+ \begin{equation*}
+    a_1 = 0.397
+\end{equation*}
+Therefore, using the equilibrium values above $a_2$ can be estimated at 0.018.
+
+Similarly, exponential predator death is seen in the absence of prey thus allowing the estimation of $b_1$ as follows:
+\begin{equation*}
+    Y(t) = Y_0e^{-b_1t}
+\end{equation*}
+pulling from the data in a period of rapid predator population decline (1905-1906)
+ \begin{equation*}
+    19 = 41.7e^{-b_1t}
+\end{equation*}
+ \begin{equation*}
+    b_1 = 0.786
+\end{equation*}
+and as above, using the equilibrium values, we estimate $b_2$ as 0.023
+
+Taking these values as initial estimates and inputting them into the least squares function in the lynx\_hare\_extension.m file (code provided by the tutorial) - we find the values for the simulation are optimised as follows: initial value for prey population 34,913, initial value for predator 3,856, $a_1$ = 0.4807. 
+
+Taking these optimised values we can translate them back into the previous model ($k-1$ = $a_1$, $k_2$ = $k_1$/ $Y_e$, $k_3$ = $k_1$($X_e$/ $Y_e$) and refit the model - see Fig. \ref{fig:optimised}. This fit, while not significantly different from Fig. \ref{fig:results_3} is simulated using a more grounded estimate for the important $k_1$ parameter and therefore is more robust and more theoretically grounded than the original. It is also reassuring that the estimate derived in the original model of $k_1$ - 0.5 is not far from the least squares optimal parameter calculated at 0.4807.
+
+\begin{figure}[H]
+    \includegraphics[width = \textwidth]{optimised.PNG}
+    \caption{Overlay of optimised model simulations and historical data. The historical data is presented in black. The model simulations are plotted in red and yellow for the prey and predator populations, respectively. Note the close fit of the simulations to the historical pelt data. Values used to optimise fit:  $X_0$ = 34913, $Y_0$ = 3856, $k_1$ = 0.4807, $k_2$ = $2.1e^-^5$, $k_3$ = 0.7526. }
+    \label{fig:optimised}
+\end{figure}
+
+
+
 \subsection{Relating findings to the biological system}
 The simulated values, using the Lotka-Volterra model, appears to approximate the historical pelt data well. The behaviour of the model when start values, parameter constants and presence or absence of species also mirrors the expected dynamics of the species populations' (see Section 4.1). 
 
@@ -404,6 +464,6 @@ Future modelling could assess this issue as well as look to better situate the p
 
 If this model was refined it could aid an understanding of how to infer species population dynamics from secondary dataset. For example, understanding how the fluctuations in species caught by the fishing industry might lend itself to better approximations of population sizes and dynamics in our oceanic biospheres. Future research should focus on scaling model simulations to capitalise on existing data sets based off human interaction with ecosystems in order to better assess both the dynamics of species of interest but also to estimate population sizes - a particularly potent when considering evaluating the health of endangered populations
 \clearpage
-\section{}
+\section{References}
 \printbibliography
 \end{document}
